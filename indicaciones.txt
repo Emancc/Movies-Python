@@ -1,0 +1,5 @@
+put para actualizar 
+patch para actualizar parcial
+delete para eliminar
+get para obtener
+post para crear
