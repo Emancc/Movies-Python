@@ -10,6 +10,11 @@ class ReviewSchema(Schema):
     rating = fields.Int(required=True)
     comments = fields.Str(allow_none=True)
     date = fields.Date(allow_none=True)
+    user = fields.Nested(
+        "UserSchema", 
+        only=("name",),
+        dump_only=True
+    )
 
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)
@@ -18,6 +23,6 @@ class UserSchema(Schema):
     reviews = fields.List(
         fields.Nested(
             "ReviewSchema", 
-            exclude=("user_id",)),
+            exclude=("user",)),
         dump_only=True
     )

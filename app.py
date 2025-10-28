@@ -65,7 +65,13 @@ def user(id):
 def reviews():
     reviews = Review.query.all()
     return ReviewSchema(many=True).dump(reviews)
-    return 
+
+@app.route('/reviews/<int:id>',methods=['GET'])
+def review(id):
+    review = Review.query.get_or_404(id)
+    return ReviewSchema().dump(review)
+
+
 @app.route('/movies')
 def Movies():
     movies = Movie.query.all()
