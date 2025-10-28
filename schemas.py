@@ -9,6 +9,7 @@ class ReviewSchema(Schema):
     movie_id = fields.Int(required=True)
     rating = fields.Int(required=True)
     comments = fields.Str(allow_none=True)
+    date = fields.Date(allow_none=True)
 
 class UserSchema(Schema):
     id = fields.Int(dump_only=True)

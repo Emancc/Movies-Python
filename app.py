@@ -2,9 +2,10 @@ from flask import Flask, render_template, request
 from models import(
     db,
     User,
+    Review,
     Movie,
 )
-from schemas import UserSchema
+from schemas import UserSchema, ReviewSchema
 from marshmallow import ValidationError
 
 
@@ -19,12 +20,13 @@ db.init_app(app)
 def Users():
     if request.method == 'POST':
         try:
-           data = UserSchema().load(request.json)
+            data = UserSchema().load(request.json)
+            new_user = User(name=data.get('name'), email=data.get('email'))
+            db.session.add(new_user)
+            db.session.commit()
         except ValidationError as err:
-            return{"Mensaje": f"Error en la particion {err}"}
-        new_user = User(name=data.get('name'), email=data.get('email'))
-        db.session.add(new_user)
-        db.session.commit()
+            return{"Mensaje": f"Error en la particion {err}"},400
+
         return UserSchema().dump(new_user)
     users = User.query.all()
     return UserSchema(many=True).dump(users)
@@ -34,33 +36,36 @@ def user(id):
     user=User.query.get_or_404(id)
     if request.method == 'PUT':
         try:
-           data = UserSchema().load(request.json)
+            data = UserSchema().load(request.json)
+            user.name = data['name']
+            user.email = data['email']
+            db.session.commit()
         except ValidationError as err:
             return {"Error": err.messages}
-        
-        user.name = data['name']
-        user.email = data['email']
-        db.session.commit()
 
     if request.method == 'PATCH':
         try:
-           data = UserSchema().load(request.json)
+            data = UserSchema(partial=True).load(request.json) #<-- con el partial=True permitimos que no vengan todos los campos obligatorios
+            if 'name' in data:
+                user.name = data.get('name')
+            if 'email' in data:
+                user.email =data.get('email')
+            db.session.commit()               
         except ValidationError as err:
             return {"Error": err.messages}
-        
-        if 'name' in data:
-            user.name = data['name']
-        if 'email' in data:
-            user.email =data['email']
-        db.session.commit()
 
     if request.method == 'DELETE':
         db.session.delete(user)
         db.session.commit()
         return {"Message":"Deleted User"}, 204
         
-    return UserSchema().dump(user)
+    return UserSchema().dump(user),200
 
+@app.route('/reviews')
+def reviews():
+    reviews = Review.query.all()
+    return ReviewSchema(many=True).dump(reviews)
+    return 
 @app.route('/movies')
 def Movies():
     movies = Movie.query.all()
